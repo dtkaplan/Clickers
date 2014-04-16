@@ -15,12 +15,23 @@ keyword <-
             value=""
   )
 
+# CSS to make the radio buttons horizontal
+# from Joe Cheng
+# https://groups.google.com/forum/#!topic/shiny-discuss/XHGVBWeiiTQ
+
 letterAnswer <- 
-  radioButtons(inputId="letterAnswer",
-               label="Choice:",
-               choices=c("A","B","C","D",
-                         "E","F","G","don't know"='?',"none"),         
-               selected = "none"
+  div(
+    tags$head(tags$style(type="text/css",
+                         "label.radio { display: inline-block; }",
+                         ".radio input[type=\"radio\"] { float: none; }"
+    )),
+    radioButtons(inputId="letterAnswer",
+                 label="Choice:",
+                 choices=c('A    '="A", 'B    '="B", 'C    '="C", 'D    '="D",
+                           'E    '="E", 'F    '="F", 'G    '="G", 'H    '="H",
+                           "don't know"='?',"none"),         
+                 selected = "none"
+    )
   )
 shortAnswer <- 
   textInput(inputId="shortAnswer",
@@ -51,7 +62,7 @@ answerInputs <-
   tabsetPanel( 
     id='userInputs',
     tabPanel('Alphabetic',
-             letterAnswer, submitButton(text="Send Answer"),
+             submitButton(text="Send Answer"),letterAnswer, 
              value='Alphabetic'),
     tabPanel('Short',
              shortAnswer, submitButton(text="Send Answer"),
@@ -75,13 +86,12 @@ answerInputs <-
 
 
 overallUI <-
-  div(class='span12',
-   leaderControls,
-   div(class='span12',    
-      answerInputs, 
-      htmlOutput("slideMaterial") 
+  column(12,  
+   leaderControls,    
+   answerInputs, 
+   htmlOutput("slideMaterial") 
   ) 
-)
+
 
 # Create the page 
-shinyUI(bootstrapPage(overallUI))
+shinyUI(fluidPage(overallUI)) #bootstrapPage(overallUI))

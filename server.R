@@ -69,15 +69,6 @@ clickerServer <- function(input,output,session){
     if( input$userID != 'leader' )
       updateTabsetPanel(session,'userInputs',selected=answerTabToShow)
     
-#     if (grepl('[A|a]lpha',slideStyle)) { 
-#       answerTabToShow <- 'Alphabetic'
-#       # updateRadioButtons(session,'letterAnswer',selected='none')
-#     }
-#     if (grepl('[S|s]hort',slideStyle)) answerTabToShow <- 'Short'
-#     if (grepl('[T|t]ext',slideStyle)) answerTabToShow <- 'Text'
-#     
-    
-    
     # return the slide contents for display
     HTML(isolate({slideContentsGlobal}))
   })
