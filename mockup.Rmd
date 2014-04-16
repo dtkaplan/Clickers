@@ -1,0 +1,90 @@
+---
+title: "Mockup of Clicker System"
+author: "DTK"
+date: "March 29, 2014"
+output: html_document
+---
+
+```{r include=FALSE}
+require(shiny)
+```
+
+## The Clicker UI
+
+```{r}
+
+testMyUI <- function(UI,serverFun=function(input,output){}){
+  runApp( list(ui=bootstrapPage(UI), 
+             server = serverFun)
+        )
+header <- headerPanel("Clicker Mock Up",
+                      windowTitle='Clickers!' )
+userID <- 
+  textInput(inputId="userID",
+            label="User ID",
+            value="")
+keyword <-
+  textInput(inputId="userKey",
+            label="Password",
+            value="pass")
+
+letterAnswer <- 
+  radioButtons(inputId="letterAnswer",
+               label="Choice:",
+               choices=c("A","B","C","D",
+                         "E","F","G","none"),         
+               selected = "none")
+shortAnswer <- 
+  textInput(inputId="shortAnswer",
+            label="Your Answer:",
+            value="")
+
+textAnswer <- p('<textarea cols=40 rows=4 id="textAnswer" placehoder="You can make this window bigger, as needed"></textarea>')
+
+answerInputs <-
+  tabsetPanel(
+    tabPanel('Letters',letterAnswer,value='letters'),
+    tabPanel('Short'shortAnswer,value='short'),
+    tabPanel('Text',textAnswer,value='text'),
+    tabPanel('Login',
+             div(class='span10 well', 
+                 h3('Our Clicker System!'),
+                 userID, keyword),
+             value='login'),
+    id='answerPosibilities',
+    selected='login'
+    )
+
+
+overallUI <-    
+  div(class='span12',
+      answerInputs, h3("delete me"), htmlOutput("slideMaterial")     
+      )
+
+#### Shared Variables
+
+slideChangedGlobal <- FALSE
+slideContentsGlobal <- readChar(slideFile, 
+                         file.info(slideFile)$size)
+
+
+#### The server itself
+
+clickerServer <- function(input,output,session){
+  # Display the HTML
+  output$slideMaterial <- renderText({
+     input$answerInputs # for the dependency
+     HTML(slideContents())
+  })
+  # Other server responders.
+  slideContents <- reactive({
+    slideFile <- "mockProblem-I.html"
+    contents <- readChar(slideFile, 
+                         file.info(slideFile)$size)
+    return(contents)
+  })
+  }
+
+
+testMyUI(overallUI,server=clickerServer)
+```

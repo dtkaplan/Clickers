@@ -1,0 +1,9 @@
+```{r include=FALSE}
+require(mosaic)
+```
+
+### Your view ...
+
+How do you feel about the weather?
+
+Enter one or two sentences.

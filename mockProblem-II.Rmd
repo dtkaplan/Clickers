@@ -1,0 +1,15 @@
+```{r include=FALSE}
+require(mosaic)
+```
+
+### Calendar Question 1.
+
+How many months are there in a year?
+
+
+A. 7    
+B. 9  
+C. 12  
+D. None of the above  
+E. Don't know
+
