@@ -19,7 +19,7 @@ letterAnswer <-
   radioButtons(inputId="letterAnswer",
                label="Choice:",
                choices=c("A","B","C","D",
-                         "E","F","G","don't know","none"),         
+                         "E","F","G","don't know"='?',"none"),         
                selected = "none"
   )
 shortAnswer <- 

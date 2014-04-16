@@ -110,7 +110,7 @@ clickerServer <- function(input,output,session){
       if( slideStyle %in% c('Short','Alphabetic')) {
         if (slideStyle=='Alphabetic')
           submissions <- factor(submissions, 
-                                   levels=LETTERS[1:7])
+                                   levels=c(LETTERS[1:7],"?"))
         return(barplot(table(submissions)))
       }
     }
