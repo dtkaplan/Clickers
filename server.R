@@ -13,6 +13,8 @@ slideInfo <- list() # read in later
 # The HTML of the slide currently being displayed
 slideContentsGlobal <- "<h3>No slide yet selected by leader.</h3>"
 
+globalSlideStyle <- 'Alphabetic' # to set the mode of submissions
+
 #### Instructor Variables
 # The file (or URL) containing the list of slides
 controlFileURL <- "ControlFile.csv"
@@ -61,13 +63,38 @@ clickerServer <- function(input,output,session){
     answerTabToShow <- 'Login' 
     if( length(slideInfo)>0 & globalSlideNumber>0) {
       slideStyle <- slideInfo[[isolate(globalSlideNumber)]]$style
+      # updateTextInput(session,'slideStyle',value=globalSlideStyle)
+      globalSlideStyle <<- slideStyle
       answerTabToShow <- switch(slideStyle, Short='Short',
                                 Text='Text',
                                 Alphabetic='Alphabetic')
+      # output$answerInput <- renderUI(HTML(answerTabToShow))
+      output$answerInput <- renderUI({
+        switch(slideStyle,
+               Short= textInput(inputId="shortAnswer2",
+                  label="Your Answer: NEW VERSION",
+                  value=""),
+               Alphabetic=list(
+                 tags$head(tags$style(type="text/css",
+                                      "label.radio { display: inline-block; padding-right:15px; margin-left=0px; }",
+                                      ".radio input[type=\"radio\"] { float: none; }"
+                 )),
+                 radioButtons(inputId="letterAnswer2",
+                                           label="Choice: NEW VERSION",
+                                           choices=c('A'="A", 'B'="B", 'C'="C", 'D'="D",
+                                                     'E'="E", 'F'="F", 'G'="G", 'H'="H",
+                                                     "don't know"='?',"none"),         
+                                           selected = "none")
+                 ),
+               Text=HTML('<textarea cols=80 rows=10 id="textAnswer2" placeholder="You can make this window bigger, as needed"></textarea>'
+)
+               )
+       
+      })
     }
     # Change the tab being displayed.  For leaders, leave it alone
     if( input$userID != 'leader' )
-      updateTabsetPanel(session,'userInputs',selected=answerTabToShow)
+      updateTabsetPanel(session,'userInputs',selected='Alphabetic') #answerTabToShow)
     
     # return the slide contents for display
     HTML(isolate({slideContentsGlobal}))
@@ -124,39 +151,40 @@ clickerServer <- function(input,output,session){
   
   # respond to an Alphabet input
   observe({
-    input$letterAnswer # for the dependency
+    input$letterAnswer2 # for the dependency
     slide <- isolate(globalSlideNumber)
     myID <- isolate(input$userID)
     if (slide > 0 ) {
       # deal with some startup issues 
       # since the radiobutton gets triggered at startup
-      if (input$letterAnswer!='none' | myID!="starting ID") {
+      if (!is.null(input$letterAnswer2) && 
+            (input$letterAnswer2!='none' || myID!="starting ID") ){
         slideInfo[[slide]]$responses[isolate(myID)] <<- 
-           input$letterAnswer
+           input$letterAnswer2
       }
     }
     })
   # respond to a Text input
   observe({
-    input$textAnswer # for the dependency
+    input$textAnswer2 # for the dependency
     myID <- isolate(input$userID)
     slide <- isolate(globalSlideNumber)
     if (slide > 0 & myID!="starting ID" )
-      slideInfo[[slide]]$responses[myID] <<- input$textAnswer
+      slideInfo[[slide]]$responses[myID] <<- input$textAnswer2
   })
   # respond to a short answer
   observe({
-    input$shortAnswer # for the dependency
+    input$shortAnswer2 # for the dependency
     myID <- isolate(input$userID)
     slide <- isolate(globalSlideNumber)
     if (slide > 0 & myID!="starting ID")
-      slideInfo[[slide]]$responses[myID] <<- input$shortAnswer
+      slideInfo[[slide]]$responses[myID] <<- input$shortAnswer2
   })
   
   observe({
-    input$shortAnswer
-    input$textAnswer
-    input$letterAnswer
+    input$shortAnswer2
+    input$textAnswer2
+    input$letterAnswer2
     slide <- isolate(globalSlideNumber)
     if (slide > 0)
       cat(paste(paste(slideInfo[[slide]]$responses,collapse=" : "),'\n'),file=stderr())

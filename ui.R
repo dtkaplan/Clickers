@@ -22,13 +22,13 @@ keyword <-
 letterAnswer <- 
   div(
     tags$head(tags$style(type="text/css",
-                         "label.radio { display: inline-block; }",
+                         "label.radio { display: inline-block; padding-right:15px; margin-left=0px; }",
                          ".radio input[type=\"radio\"] { float: none; }"
     )),
     radioButtons(inputId="letterAnswer",
                  label="Choice:",
-                 choices=c('A    '="A", 'B    '="B", 'C    '="C", 'D    '="D",
-                           'E    '="E", 'F    '="F", 'G    '="G", 'H    '="H",
+                 choices=c('A'="A", 'B'="B", 'C'="C", 'D'="D",
+                           'E'="E", 'F'="F", 'G'="G", 'H'="H",
                            "don't know"='?',"none"),         
                  selected = "none"
     )
@@ -61,21 +61,26 @@ leaderControls <- conditionalPanel(
 answerInputs <- 
   tabsetPanel( 
     id='userInputs',
-    tabPanel('Alphabetic',
-             submitButton(text="Send Answer"),letterAnswer, 
+    tabPanel('View Question',
+             submitButton(text="Send Answer"),# letterAnswer, 
+             uiOutput('answerInput'),
              value='Alphabetic'),
-    tabPanel('Short',
-             shortAnswer, submitButton(text="Send Answer"),
-             value='Short'),
-    # Something is not right with textAnswer
-    tabPanel('Text',
-             HTML(textAnswer), submitButton(text="Send Answer"),
-             value='Text'),
+#     tabPanel('Short',
+#              shortAnswer, submitButton(text="Send Answer"),
+#              value='Short'),
+#     # Something is not right with textAnswer
+#     tabPanel('Text',
+#              HTML(textAnswer), submitButton(text="Send Answer"),
+#              value='Text'),
     tabPanel('Login', 
               h3('Project MOSAIC Polling App'),
               userID, keyword,
              submitButton(text="Login"),
              uiOutput('slideChooser'),
+             # A dummy, to hold the slide answer Style
+             textInput('slideStyle',
+                       "",
+                       value="Short"),
              value='Login'),
     tabPanel('Answers',
              textOutput('showTextAnswers',container=pre),
