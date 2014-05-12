@@ -72,7 +72,7 @@ clickerServer <- function(input,output,session){
       output$answerInput <- renderUI({
         switch(slideStyle,
                Short= textInput(inputId="shortAnswer2",
-                  label="Your Answer: NEW VERSION",
+                  label="Your Answer:",
                   value=""),
                Alphabetic=list(
                  tags$head(tags$style(type="text/css",
@@ -80,7 +80,7 @@ clickerServer <- function(input,output,session){
                                       ".radio input[type=\"radio\"] { float: none; }"
                  )),
                  radioButtons(inputId="letterAnswer2",
-                                           label="Choice: NEW VERSION",
+                                           label="Choice:",
                                            choices=c('A'="A", 'B'="B", 'C'="C", 'D'="D",
                                                      'E'="E", 'F'="F", 'G'="G", 'H'="H",
                                                      "don't know"='?',"none"),         
@@ -90,7 +90,9 @@ clickerServer <- function(input,output,session){
 )
                )
        
-      })
+      } )
+    } else {
+      output$answerInput <- renderUI({})
     }
     # Change the tab being displayed.  For leaders, leave it alone
     if( input$userID != 'leader' )
@@ -190,13 +192,19 @@ clickerServer <- function(input,output,session){
       cat(paste(paste(slideInfo[[slide]]$responses,collapse=" : "),'\n'),file=stderr())
   })
   
+
   # Other server responders.
   
   # Display the slide list table for the leader
   output$slideListTable <- renderTable({
     if (input$userID == 'leader'){
+      controlName <- input$slideListURL
+      if (grepl("^http",controlName)){
+        controlName <- sub("https:","http:",controlName)
+        controlSlideTable <<- url(controlName)
+      } 
       controlSlideTable <<- 
-        read.csv( input$slideListURL,as.is=TRUE)
+        read.csv( controlName,as.is=TRUE)
       # read in all the slide information, including the HTML
       for (k in 1:nrow(controlSlideTable)){
         slideInfo[[k]] <<- list(html=getURLContent(url=controlSlideTable$URL[k]),
@@ -205,12 +213,13 @@ clickerServer <- function(input,output,session){
                                 responses=c() #empty, at first
         )
       }
+      # Think about putting radio buttons in the table itself:
+      # a description of how to do this: http://stackoverflow.com/a/15977759
+      
       # update the choices in the leader's selector
       slideNames <- 0:nrow(controlSlideTable)
-      names(slideNames) <- paste(slideNames,c('',controlSlideTable$Style),
-                                 c('BLANK',controlSlideTable$Name),
-                                 sep=':  ')
-      updateSelectInput(session,'slideToDisplay',
+      names(slideNames)=c("Blank",1:nrow(controlSlideTable))
+      updateRadioButtons(session,'slideToDisplay',
                         choices=slideNames,
                         selected=0)
       # return the table to be displayed
@@ -218,16 +227,6 @@ clickerServer <- function(input,output,session){
     }
   })
 
-  # When the leader changes the slide number, this executes.
-  observe({
-    if( input$userID == 'leader'){
-      slideNum <- as.numeric(input$slideToDisplay) # was slideNumber
-      write.csv(list(a=rnorm(1)), 'newSlide.csv', row.names=FALSE)
-      isolate({globalSlideNumber <<- slideNum}) # triggers the change for other participants
-    }
-  })
-  
-  
   
   observe({
     # set up an update of the display
@@ -235,7 +234,7 @@ clickerServer <- function(input,output,session){
     # Get the slide contents
     if ( globalSlideNumber==0 ) {
       slideContentsGlobal <<- 
-        "<h3>Blank slide selected by leader.</h3>"
+        "<h4><i class=\"fa fa-spinner fa-spin\"></i>&nbsp;Waiting for leader to post question ...</h4>"
       return()
     }
     if ( globalSlideNumber > nrow(controlSlideTable)){
@@ -249,7 +248,18 @@ clickerServer <- function(input,output,session){
     slideContentsGlobal <<- slideInfo[[globalSlideNumber]]$html
   })
 
-  
+ 
+# When the leader changes the slide number, this executes.
+observe({
+  if( input$userID == 'leader'){
+    slideNum <- as.numeric(input$slideToDisplay) # was slideNumber
+    write.csv(list(a=rnorm(1)), 'newSlide.csv', row.names=FALSE)
+    isolate({globalSlideNumber <<- slideNum}) # triggers the change for other participants
+  }
+})
+
+
+
 }
 
 
