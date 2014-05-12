@@ -19,6 +19,7 @@ keyword <-
 # from Joe Cheng
 # https://groups.google.com/forum/#!topic/shiny-discuss/XHGVBWeiiTQ
 
+
 letterAnswer <- 
   div(
     tags$head(tags$style(type="text/css",
@@ -63,6 +64,8 @@ textAnswer <- '<textarea cols=80 rows=10 id="textAnswer" placeholder="You can ma
 
 leaderControls <- conditionalPanel(
   condition='input.userID=="leader"',
+  downloadButton('downloadData', label = "Download Slide Data", class = NULL),
+  
   slideListURL,
   selectSlide,
   slideListTable
@@ -91,7 +94,7 @@ answerInputs <-
 
 overallUI <-
   column(12, 
-   h3(strong('Project MOSAIC'), 'Polling App (beta)'),
+   h3('Project MOSAIC', 'Polling App (v 0.2)'),
    p('...........'),
    htmlOutput("slideMaterial"),
    br(),

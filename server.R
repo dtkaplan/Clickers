@@ -34,6 +34,7 @@ standardizeStyle <- function(slideStyle) {
   if (grepl('[A|a]lpha',slideStyle)) res <- 'Alphabetic'
   if (grepl('[S|s]hort',slideStyle)) res <- 'Short'
   if (grepl('[T|t]ext',slideStyle)) res <- 'Text'
+  if (grepl('[M|m]ulti',slideStyle)) res <- 'Multi'
   return(res)
 }
 #### The server itself
@@ -65,6 +66,7 @@ clickerServer <- function(input,output,session){
       slideStyle <- slideInfo[[isolate(globalSlideNumber)]]$style
       # updateTextInput(session,'slideStyle',value=globalSlideStyle)
       globalSlideStyle <<- slideStyle
+      # THIS NEXT LINE IS PROBABLY DEFUNCT ...
       answerTabToShow <- switch(slideStyle, Short='Short',
                                 Text='Text',
                                 Alphabetic='Alphabetic')
@@ -86,6 +88,16 @@ clickerServer <- function(input,output,session){
                                                      "don't know"='?',"none"),         
                                            selected = "none")
                  ),
+               Multi=list(
+                 tags$head(tags$style(type="text/css",
+                                      "label.checkbox { display: inline-block; padding-right:15px; margin-left=0px; }",
+                                      ".checkbox input[type=\"checkbox\"] { float: none; }"
+                 )),
+                 checkboxGroupInput('multiAnswer2',
+                                    label="Choices",
+                                    choices=as.list(LETTERS[1:10])
+                 )
+               ),
                Text=HTML('<textarea cols=80 rows=10 id="textAnswer2" placeholder="You can make this window bigger, as needed"></textarea>'
 )
                )
@@ -127,10 +139,14 @@ clickerServer <- function(input,output,session){
     if (globalSlideNumber > 0){
       submissions <- slideInfo[[globalSlideNumber]]$responses
       slideStyle <- slideInfo[[globalSlideNumber]]$style
-      if( slideStyle %in% c('Short','Alphabetic')) {
+      if( slideStyle %in% c('Short','Alphabetic','Multi')) {
         if (slideStyle=='Alphabetic')
-          submissions <- factor(submissions, 
-                                   levels=c(LETTERS[1:7],"?"))
+          submissions <- factor(submissions, levels=c(LETTERS[1:7],"?"))
+        if (slideStyle=='Multi') {
+          submissions <- unlist(strsplit(submissions,' '))
+          submissions <- factor(submissions, levels=LETTERS[1:12])
+        }
+        
         return(barplot(table(submissions)))
       }
     }
@@ -173,6 +189,16 @@ clickerServer <- function(input,output,session){
     slide <- isolate(globalSlideNumber)
     if (slide > 0 & myID!="starting ID" )
       slideInfo[[slide]]$responses[myID] <<- input$textAnswer2
+  })
+  # respond to a multi answer
+  observe({
+    input$multiAnswer2 # for the dependency
+    myID <- isolate(input$userID)
+    slide <- isolate(globalSlideNumber)
+    if (slide > 0 & myID!="starting ID" ) {
+      slideInfo[[slide]]$responses[myID] <<- 
+           paste( input$multiAnswer2,collapse=' ')
+    }
   })
   # respond to a short answer
   observe({
@@ -257,6 +283,18 @@ observe({
     isolate({globalSlideNumber <<- slideNum}) # triggers the change for other participants
   }
 })
+
+
+## For downloading the data
+
+output$downloadData <- downloadHandler(
+  filename = function() {
+    paste('submissions-', Sys.Date(), '.Rda', sep='')
+  },
+  content = function(file) {
+    save(slideInfo, file=file)
+  }
+)
 
 
 
